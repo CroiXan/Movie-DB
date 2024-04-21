@@ -1,6 +1,7 @@
 package dsy.movies.movies.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 
@@ -53,9 +54,52 @@ public class PeliculaControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/peliculas"))
             .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$",Matchers.hasSize(2)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].titulo",Matchers.is("The Matrix")))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[1].titulo",Matchers.is("Pulp Fiction")));
+            .andExpect(MockMvcResultMatchers.jsonPath("$._embedded.peliculaList",Matchers.hasSize(2)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$._embedded.peliculaList[0].titulo",Matchers.is("The Matrix")))
+            .andExpect(MockMvcResultMatchers.jsonPath("$._embedded.peliculaList[1].titulo",Matchers.is("Pulp Fiction")));
     }
-    
+
+    @Test
+    public void gellGetMoviesByIdTest() throws Exception{
+
+        Pelicula pelicula1 = new Pelicula();
+        pelicula1.setId(1L);
+        pelicula1.setTitulo("The Matrix");
+        pelicula1.setDirector("Wachowski Sisters");
+        pelicula1.setGenero("Sci-Fi");
+        pelicula1.setSinopsis("When a beautiful stranger leads computer hacker Neo to a forbidding underworld, he discovers the shocking truth--the life he knows is the elaborate deception of an evil cyber-intelligence.");
+        pelicula1.setYear(1999);
+
+        Pelicula pelicula2 = new Pelicula();
+        pelicula2.setId(2L);
+        pelicula2.setTitulo("Pulp Fiction");
+        pelicula2.setDirector("Quentin Tarantino");
+        pelicula2.setGenero("Crime");
+        pelicula2.setSinopsis("The lives of two mob hitmen, a boxer, a gangster and his wife, and a pair of diner bandits intertwine in four tales of violence and redemption.");
+        pelicula2.setYear(1994);
+
+        List<Pelicula> peliculaList = new ArrayList<Pelicula>();
+
+        peliculaList.add(pelicula1);
+        peliculaList.add(pelicula2);
+
+        when(peliculaServiceImplMock.getPeliculaById(1L)).thenReturn(getPeliculaByID(1L,peliculaList));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/peliculas/1"))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.titulo",Matchers.is("The Matrix")));
+    }
+
+    private Optional<Pelicula> getPeliculaByID(Long idPelicula, List<Pelicula> peliculaList ){
+
+        for (Pelicula pelicula : peliculaList) {
+            if (pelicula.getId() == idPelicula) {
+                return Optional.of(pelicula);
+            }
+        }
+
+        return null;
+    }
+
+
 }
